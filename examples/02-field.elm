@@ -50,4 +50,5 @@ view model =
   div []
     [ input [ placeholder "Text to reverse", onInput Change ] []
     , div [] [ text (String.reverse model.content) ]
+    , div [] [ text (model.content) ]
     ]
