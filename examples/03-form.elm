@@ -1,6 +1,6 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onInput,onClick)
 import String
 import Regex
 
@@ -22,12 +22,14 @@ type alias Model =
   , password : String
   , passwordAgain : String
   , age : Int
+  , message : String
+  , colour : String
   }
 
 
 model : Model
 model =
-  Model "" "" "" 0
+  Model "" "" "" 0 "" "green"
 
 
 
@@ -35,7 +37,8 @@ model =
 
 
 type Msg
-    = Name String
+    = SubmitForm
+    | Name String
     | Password String
     | PasswordAgain String
     | Age String
@@ -56,6 +59,8 @@ update msg model =
     Age age ->
       { model | age = Result.withDefault 0 (String.toInt age) }
 
+    SubmitForm ->
+      viewValidation model
 
 
 -- VIEW
@@ -68,21 +73,18 @@ view model =
     , input [ type_ "password", placeholder "Password", onInput Password ] []
     , input [ type_ "password", placeholder "Re-enter Password", onInput PasswordAgain ] []
     , input [ type_ "number", placeholder "Age", onInput Age] []
-    , viewValidation model
+    , button [ onClick SubmitForm ] [text "Submit"]
+    , div [ style [("color", model.colour)] ] [ text model.message ]
     ]
 
 
-viewValidation : Model -> Html msg
+viewValidation : Model -> Model
 viewValidation model =
-  let
-    (color, message) =
       if model.password /= model.passwordAgain then
-        ("red", "Passwords do not match!")
+        { model | colour = "red", message = "Passwords do not match!" }
       else if String.length model.password < 8 then
-        ("red", "Password is too short!")
+        { model | colour = "red", message = "Password is too short!" }
       else if not (Regex.contains (Regex.regex "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*(_|[^\\w])).+$") model.password) then
-        ("red", "Password should contain upper and lower case characters, digits and symbols")
+        { model | colour = "red", message = "Password should contain upper and lower case characters, digits and symbols" }
       else
-        ("green", "OK")
-  in
-    div [ style [("color", color)] ] [ text message ]
+        { model | colour = "green", message = "OK" }
